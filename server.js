@@ -5,7 +5,7 @@ var apiProxy = httpProxy.createProxyServer();
 var serverOne = 'http://localhost:4243';
 const env = process.env.TOKEN || 'blank';
 
-app.all("/*", function(req, res){
+app.all("/*", function(req, res, next){
     var token = req.get('X-DFP-Token');
     if(token === env){
         next();
