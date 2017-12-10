@@ -8,7 +8,6 @@ const env = process.env.TOKEN || 'blank';
 app.all("/*", function(req, res){
     var token = req.get('X-DFP-Token');
     if(token === env){
-        console("valid");
         next();
     }else {
         return res.status(401).send({
