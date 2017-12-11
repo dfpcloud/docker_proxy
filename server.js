@@ -23,7 +23,7 @@ child.exec("sudo -u root -H sh -c 'aws ecr get-login --no-include-email'", (err,
 
 
 app.all("/*", function (req, res, next) {
-    var token = req.get('X-DFP-Token');
+    var token = req.get('X-DOCKER-Token');
     if (token === env) {
         next();
     } else {
@@ -36,10 +36,21 @@ app.all("/*", function (req, res, next) {
 })
 
 app.all("/v1.32/*", function (req, res) {
-    if (!req.headers['X-Registry-Auth']) {
+    if (!req.headers['X-Registry-Auth'] && auth) {
         req.headers['X-Registry-Auth'] = auth;
     }
     apiProxy.web(req, res, { target: serverOne });
 });
 
-app.listen(8080);
+app.use((req, res, next) => {
+    return res.status(404).send({
+        "message": "API Not Found",
+        "statusCode": "404",
+        "data": null
+    });
+});
+
+app.listen(8080, function(err){
+    if(err) throw err;
+    console.log("App listening on port " + 8080);
+});
