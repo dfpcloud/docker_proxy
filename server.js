@@ -7,20 +7,27 @@ var env = process.env.dfp_token || 'blank';
 var child = require('child_process');
 var auth;
 
-child.exec("sudo -u root -H sh -c 'aws ecr get-login --no-include-email'", (err, stdout, stderr) => {
-    if (err) {
-        console.error(err);
-        return;
-    }
-    var subStr = stdout.split(" ");
-    var data = {
-        "username": subStr[3],
-        "password": subStr[5],
-        "serveraddress": subStr[6].replace(/(\r\n|\n|\r)/gm, "")
-    }
-    auth = new Buffer(JSON.stringify(data)).toString('base64');
-});
+setInterval(function () {
+    updateAuthToken()
+}, 21600000);
 
+updateAuthToken();
+
+function updateAuthToken() {
+    child.exec("sudo -u root -H sh -c 'aws ecr get-login --no-include-email'", (err, stdout, stderr) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        var subStr = stdout.split(" ");
+        var data = {
+            "username": subStr[3],
+            "password": subStr[5],
+            "serveraddress": subStr[6].replace(/(\r\n|\n|\r)/gm, "")
+        }
+        auth = new Buffer(JSON.stringify(data)).toString('base64');
+    });
+}
 
 app.all("/*", function (req, res, next) {
     var token = req.get('X-DOCKER-Token');
@@ -50,7 +57,7 @@ app.use((req, res, next) => {
     });
 });
 
-app.listen(8080, function(err){
-    if(err) throw err;
-    console.log("App listening on port " + 8080);
+app.listen(4245, function (err) {
+    if (err) throw err;
+    console.log("App listening on port " + 4245);
 });
